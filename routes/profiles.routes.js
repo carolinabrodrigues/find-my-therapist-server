@@ -47,6 +47,20 @@ router.post('/profiles', async (req, res, next) => {
 // Postman - test passed without userId (there are no users yet)
 // TO-DO - Postman test with userId
 
+// GET - Get all profiles
+// QUESTION - Will I use it?
+router.get('/profiles', async (req, res, next) => {
+  try {
+    const profiles = await Profile.find({});
+
+    console.log('All profiles:', profiles);
+    res.status(201).json(profiles);
+  } catch (error) {
+    console.log('An error occurred retrieving the profiles', error);
+    next(error);
+  }
+});
+
 // GET - Get a single profile
 router.get('/profiles/:id', async (req, res, next) => {
   const { id } = req.params;
@@ -119,19 +133,5 @@ router.put('/profiles/:id', async (req, res, next) => {
   }
 });
 // Postman - test passed
-
-// GET - Get all profiles
-// QUESTION - Will I use it?
-router.get('/profiles', async (req, res, next) => {
-  try {
-    const profiles = await Profile.find({});
-
-    console.log('All profiles:', profiles);
-    res.status(201).json(profiles);
-  } catch (error) {
-    console.log('An error occurred retrieving the profiles', error);
-    next(error);
-  }
-});
 
 module.exports = router;

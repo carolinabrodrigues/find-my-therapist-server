@@ -14,7 +14,7 @@ GET /auth/verify
 | POST   | /auth/login  | Logs the user      |
 | GET    | /auth/verify | Verifies the JWT   |
 
-### Profile Routes
+### Profiles Routes
 
 | Method | Route            | Description                   |
 | ------ | ---------------- | ----------------------------- |
@@ -23,7 +23,7 @@ GET /auth/verify
 | POST   | /api/profile     | Creates a new profile         |
 | PUT    | /api/profile/:id | Edits the specified profile   |
 
-### Match Routes
+### Matches Routes
 
 | Method | Route            | Description                 |
 | ------ | ---------------- | --------------------------- |

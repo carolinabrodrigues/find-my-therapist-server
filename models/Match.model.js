@@ -7,8 +7,8 @@ const matchSchema = new Schema({
   matchedApproach: Boolean,
   matchedPrice: Boolean,
   matchedTraits: Boolean,
-  didClientConfirmed: Boolean,
-  didTherapistConfirmed: Boolean,
+  didClientConfirm: Boolean,
+  didTherapistConfirm: Boolean,
 });
 
 const Match = model('Match', matchSchema);
