@@ -4,10 +4,6 @@
 
 ### Auth Routes
 
-POST /auth/signup
-POST /auth/login
-GET /auth/verify
-
 | Method | Route        | Description        |
 | ------ | ------------ | ------------------ |
 | POST   | /auth/signup | Creates a new user |

@@ -1,8 +1,8 @@
 const { Schema, model } = require('mongoose');
 
 const matchSchema = new Schema({
-  clientId: { type: Schema.Types.ObjectId, ref: 'Client' },
-  therapistId: { type: Schema.Types.ObjectId, ref: 'Therapist' },
+  client: { type: Schema.Types.ObjectId, ref: 'Client' },
+  therapist: { type: Schema.Types.ObjectId, ref: 'Therapist' },
   matchedSetup: Boolean,
   matchedApproach: Boolean,
   matchedPrice: Boolean,

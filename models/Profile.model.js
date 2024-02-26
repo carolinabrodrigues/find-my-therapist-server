@@ -1,11 +1,11 @@
 const { Schema, model } = require('mongoose');
 
 const profileSchema = new Schema({
-  userId: { type: Schema.Types.ObjectId, ref: 'User' },
+  user: { type: Schema.Types.ObjectId, ref: 'User' },
   age: Number,
   gender: String,
   location: String,
-  therapySetup: [String],
+  therapySetup: { type: [String], enum: ['Remote', 'In-person'] },
   psyApproach: [String],
   importantTraits: [String],
   price: Number,

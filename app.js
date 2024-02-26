@@ -15,6 +15,7 @@ const app = express();
 require('./config')(app);
 
 // 👇 Start handling routes here
+// MISSING: isAuthenticated
 const indexRoutes = require('./routes/index.routes');
 app.use('/api', indexRoutes);
 

@@ -59,7 +59,7 @@ router.post('/signup', async (req, res, next) => {
       password: hashedPassword,
       isTherapist,
       matches: [],
-      profile: [],
+      profile: null,
     });
 
     // returning the created user without the hashed Password
@@ -74,6 +74,7 @@ router.post('/signup', async (req, res, next) => {
     next(error);
   }
 });
+// Postman - test passed
 
 // Login route
 // it doesn't post on the DB
@@ -122,6 +123,7 @@ router.post('/login', async (req, res, next) => {
     next(error);
   }
 });
+// Postman - test passed
 
 // verify route
 router.get('/verify', isAuthenticated, (req, res, next) => {
@@ -132,5 +134,6 @@ router.get('/verify', isAuthenticated, (req, res, next) => {
   // send it back with the user data from the token
   res.json(req.payload);
 });
+// Postman - test passed
 
 module.exports = router;

@@ -2,12 +2,13 @@ const router = require('express').Router();
 const mongoose = require('mongoose');
 const Match = require('../models/Match.model');
 const User = require('../models/User.model');
+const Profile = require('../models/Profile.model');
 
 // POST - Create a new match
 // only gets info from client
 // matchmaking algorithm is here?
 router.post('/matches', async (req, res, next) => {
-  const {
+  /* const {
     clientId,
     therapistId,
     matchedSetup,
@@ -17,12 +18,63 @@ router.post('/matches', async (req, res, next) => {
     didClientConfirm,
     didTherapistConfirm,
   } = req.body;
+ */
+
+  // matchmaking
+  // need to check this logic
+  const checkSetup = (client, therapist) => {
+    if (therapist.therapySetup === client.therapySetup) {
+      if (
+        client.therapySetup === 'In-person' &&
+        therapist.location !== client.location
+      ) {
+        return (matchedSetup = false);
+      }
+      return (matchedSetup = true);
+    } else {
+      return (matchedSetup = false);
+    }
+  };
+
+  const checkApproach = (client, therapist) => {
+    if (therapist.psyApproach === client.psyApproach) {
+      return (matchedApproach = true);
+    } else {
+      return (matchedApproach = false);
+    }
+  };
+
+  const checkPrice = (client, therapist) => {
+    if (therapist.price <= client.price) {
+      return (matchedPrice = true);
+    } else {
+      return (matchedPrice = false);
+    }
+  };
 
   try {
+    // the only thing I can get from the FE is the clientId
+    // didClientConfirm & didTherapistConfirm start off as false - how do I add this?
+    const { clientId } = req.body;
+
+    // GET Profiles
+    const profiles = await Profile.find({}).populate('user');
+
+    const clientProfile = profiles.filter(id => id === clientId);
+    console.log('client profile:', clientProfile);
+
+    const therapistsProfiles = profiles.filter(
+      profile => profile.user.isTherapist === true
+    );
+    console.log('therapists profiles:', therapistsProfiles);
+
+    // TO-DO: incorporate the matchmaking in here
+    // for each method - result: creates a new match
+
     // create a new match in the DB
     const newMatch = await Match.create({
-      clientId,
-      therapistId,
+      client: clientId,
+      therapist,
       matchedSetup,
       matchedApproach,
       matchedPrice,
@@ -91,8 +143,8 @@ router.put('/matches/:id', async (req, res, next) => {
   const { id } = req.params;
 
   const {
-    clientId,
-    therapistId,
+    client,
+    therapist,
     matchedSetup,
     matchedApproach,
     matchedPrice,
@@ -109,8 +161,8 @@ router.put('/matches/:id', async (req, res, next) => {
     const updatedMatch = await Match.findByIdAndUpdate(
       id,
       {
-        clientId,
-        therapistId,
+        client,
+        therapist,
         matchedSetup,
         matchedApproach,
         matchedPrice,
@@ -125,7 +177,7 @@ router.put('/matches/:id', async (req, res, next) => {
     // if the match doesn't exist: find user and push new match
     // if the match exists: nothing happens
     await User.findOneAndUpdate(
-      { _id: therapistId, matches: { $nin: [updatedMatch._id] } },
+      { _id: therapist, matches: { $nin: [updatedMatch._id] } },
       { $push: { matches: updatedMatch._id } }
     );
 

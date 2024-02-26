@@ -2,14 +2,6 @@ const { Schema, model } = require('mongoose');
 
 const userSchema = new Schema(
   {
-    firstName: {
-      type: String,
-      required: [true, 'First Name is required.'],
-    },
-    lastName: {
-      type: String,
-      required: [true, 'Last Name is required.'],
-    },
     email: {
       type: String,
       required: [true, 'Email is required.'],
@@ -20,6 +12,14 @@ const userSchema = new Schema(
     password: {
       type: String,
       required: [true, 'Password is required.'],
+    },
+    firstName: {
+      type: String,
+      required: [true, 'First Name is required.'],
+    },
+    lastName: {
+      type: String,
+      required: [true, 'Last Name is required.'],
     },
     isTherapist: Boolean,
     matches: [{ type: Schema.Types.ObjectId, ref: 'Match' }],

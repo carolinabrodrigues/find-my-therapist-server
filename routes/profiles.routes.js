@@ -20,7 +20,7 @@ router.post('/profiles', async (req, res, next) => {
   try {
     // create a new profile in the DB
     const newProfile = await Profile.create({
-      userId,
+      user: userId,
       age,
       gender,
       location,
