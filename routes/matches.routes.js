@@ -45,7 +45,8 @@ router.post('/matches', async (req, res, next) => {
   };
 
   const checkPrice = (client, therapist) => {
-    if (therapist.price <= client.price) {
+    if (therapist.price <= client.price || client.price === 0) {
+      // if client price is 0, means the price is not important for this person
       return (matchedPrice = true);
     } else {
       return (matchedPrice = false);
@@ -69,7 +70,7 @@ router.post('/matches', async (req, res, next) => {
     console.log('therapists profiles:', therapistsProfiles);
 
     // TO-DO: incorporate the matchmaking in here
-    // for each method - result: creates a new match
+    // for each method - result: creates a new match if matches 3 criteria
 
     // create a new match in the DB
     const newMatch = await Match.create({
