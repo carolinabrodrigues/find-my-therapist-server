@@ -6,7 +6,6 @@ const User = require('../models/User.model');
 // POST - Create a new profile
 router.post('/profiles', async (req, res, next) => {
   const {
-    userId,
     age,
     gender,
     location,
@@ -15,12 +14,12 @@ router.post('/profiles', async (req, res, next) => {
     importantTraits,
     price,
     calendarLink,
+    user,
   } = req.body;
 
   try {
     // create a new profile in the DB
     const newProfile = await Profile.create({
-      user: userId,
       age,
       gender,
       location,
@@ -29,12 +28,17 @@ router.post('/profiles', async (req, res, next) => {
       importantTraits,
       price,
       calendarLink,
+      user,
     });
 
     // update the user with the profile
-    await User.findByIdAndUpdate(userId, {
-      $push: { profile: newProfile._id },
-    });
+    await User.findByIdAndUpdate(
+      user,
+      {
+        $push: { profile: newProfile._id },
+      },
+      { new: true }
+    );
 
     console.log('New Profile:', newProfile);
     res.status(201).json(newProfile);
@@ -44,8 +48,7 @@ router.post('/profiles', async (req, res, next) => {
   }
 });
 
-// Postman - test passed without userId (there are no users yet)
-// TO-DO - Postman test with userId
+// Postman - test passed
 
 // GET - Get all profiles
 // QUESTION - Will I use it?

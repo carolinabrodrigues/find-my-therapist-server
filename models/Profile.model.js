@@ -1,7 +1,6 @@
 const { Schema, model } = require('mongoose');
 
 const profileSchema = new Schema({
-  user: { type: Schema.Types.ObjectId, ref: 'User' },
   age: Number,
   gender: String,
   location: String,
@@ -10,6 +9,7 @@ const profileSchema = new Schema({
   importantTraits: [String],
   price: Number,
   calendarLink: String,
+  user: { type: Schema.Types.ObjectId, ref: 'User' },
 });
 
 const Profile = model('Profile', profileSchema);

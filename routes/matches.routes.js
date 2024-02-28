@@ -6,97 +6,169 @@ const Profile = require('../models/Profile.model');
 
 // POST - Create a new match
 // only gets info from client
-// matchmaking algorithm is here?
 router.post('/matches', async (req, res, next) => {
-  /* const {
-    clientId,
-    therapistId,
-    matchedSetup,
-    matchedApproach,
-    matchedPrice,
-    matchedTraits,
-    didClientConfirm,
-    didTherapistConfirm,
-  } = req.body;
- */
-
-  // matchmaking
-  // need to check this logic
-  const checkSetup = (client, therapist) => {
-    if (therapist.therapySetup === client.therapySetup) {
-      if (
-        client.therapySetup === 'In-person' &&
-        therapist.location !== client.location
-      ) {
-        return (matchedSetup = false);
-      }
-      return (matchedSetup = true);
-    } else {
-      return (matchedSetup = false);
-    }
-  };
-
-  const checkApproach = (client, therapist) => {
-    if (therapist.psyApproach === client.psyApproach) {
-      return (matchedApproach = true);
-    } else {
-      return (matchedApproach = false);
-    }
-  };
-
-  const checkPrice = (client, therapist) => {
-    if (therapist.price <= client.price || client.price === 0) {
-      // if client price is 0, means the price is not important for this person
-      return (matchedPrice = true);
-    } else {
-      return (matchedPrice = false);
-    }
-  };
-
   try {
     // the only thing I can get from the FE is the clientId
-    // didClientConfirm & didTherapistConfirm start off as false - how do I add this?
     const { clientId } = req.body;
 
     // GET Profiles
     const profiles = await Profile.find({}).populate('user');
 
-    const clientProfile = profiles.filter(id => id === clientId);
-    console.log('client profile:', clientProfile);
+    console.log('profiles:', profiles);
+
+    const clientProfile = profiles.find(
+      profile => profile.user._id.toString() === clientId
+    );
+    console.log('client profile:', clientProfile); // gets the client
 
     const therapistsProfiles = profiles.filter(
       profile => profile.user.isTherapist === true
     );
-    console.log('therapists profiles:', therapistsProfiles);
+    console.log('therapists profiles:', therapistsProfiles); // gets the array of therapists
 
-    // TO-DO: incorporate the matchmaking in here
-    // for each method - result: creates a new match if matches 3 criteria
+    // Match check functions
+    // FUNCTIONS ARE NOT WORKING
+    const checkSetup = (client, therapist) => {
+      const findCommonSetup = (client, therapist) => {
+        for (let i = 0; i < client.therapySetup.length; i++) {
+          for (let j = 0; j < therapist.therapySetup.length; j++) {
+            if (client.therapySetup[i] === therapist.therapySetup[j]) {
+              return true;
+            }
+          }
+          return false;
+        }
+      };
 
-    // create a new match in the DB
-    const newMatch = await Match.create({
-      client: clientId,
-      therapist,
-      matchedSetup,
-      matchedApproach,
-      matchedPrice,
-      matchedTraits,
-      didClientConfirm,
-      didTherapistConfirm,
+      if (findCommonSetup(client, therapist)) {
+        if (
+          client.therapySetup.includes('In-person') &&
+          therapist.location !== client.location
+        ) {
+          return false;
+        }
+        return true;
+      } else {
+        return false;
+      }
+    };
+
+    const checkApproach = (client, therapist) => {
+      const findCommonApproach = (client, therapist) => {
+        for (let i = 0; i < client.psyApproach.length; i++) {
+          for (let j = 0; j < therapist.psyApproach.length; j++) {
+            if (client.psyApproach[i] === therapist.psyApproach[j]) {
+              return true;
+            }
+          }
+          return false;
+        }
+      };
+
+      return findCommonApproach(client, therapist);
+    };
+
+    const checkPrice = (client, therapist) => {
+      /* if (therapist.price <= client.price || client.price === 0) {
+        return true;
+      } else {
+        return false;
+      } */
+
+      return therapist.price <= client.price || client.price === 0;
+    };
+
+    // Store matches before loop
+    const setupMatches = therapistsProfiles.map(therapist => {
+      console.log('checkSetup function:', checkSetup(clientProfile, therapist)); // -> true
+      return checkSetup(clientProfile, therapist);
+    });
+    const approachMatches = therapistsProfiles.map(therapist => {
+      return checkApproach(clientProfile, therapist);
+      /* console.log(
+        'checkApproach function:',
+        checkApproach(clientProfile, therapist)
+      ); // -> true */
     });
 
-    // update the client with the match
-    await User.findByIdAndUpdate(clientId, {
-      $push: { matches: newMatch._id },
+    const priceMatches = therapistsProfiles.map(therapist => {
+      return checkPrice(clientProfile, therapist);
+      // console.log('checkPrice function:', checkPrice(clientProfile, therapist)); // -> true
     });
 
-    console.log('New Match:', newMatch);
-    res.status(201).json(newMatch);
+    console.log('setupMatches:', setupMatches);
+    console.log('approachMatches:', approachMatches);
+    console.log('priceMatches:', priceMatches);
+
+    const matchesToCreate = [];
+    for (let i = 0; i < therapistsProfiles.length; i++) {
+      if (setupMatches[i] && approachMatches[i] && priceMatches[i]) {
+        matchesToCreate.push({
+          client: clientId,
+          therapist: therapistsProfiles[i].user._id,
+          matchedSetup: setupMatches[i],
+          matchedApproach: approachMatches[i],
+          matchedPrice: priceMatches[i],
+          matchedTraits: null,
+        });
+      }
+    }
+
+    console.log('Matches to create in the DB', matchesToCreate);
+
+    // Create matches in DB in bulk if there are any to create
+    if (matchesToCreate.length > 0) {
+      const newMatches = await Match.create(matchesToCreate);
+
+      // Update the client with the new matches
+      await User.findByIdAndUpdate(
+        clientId,
+        {
+          $push: { matches: { $each: newMatches.map(match => match._id) } },
+        },
+        { new: true }
+      );
+
+      console.log('New Matches in DB:', newMatches);
+      res.status(201).json(newMatches);
+    }
+
+    /* else {
+      res.status(500).json({ message: 'No matches to create' });
+    } */
+
+    /* WITH MATCHMAKING & DATABASE CREATION INSIDE LOOP
+    Not best practice
+
+    for (const therapistProfile of therapistsProfiles) {
+      if (
+        checkSetup(clientProfile, therapistProfile) &&
+        checkApproach(clientProfile, therapistProfile) &&
+        checkPrice(clientProfile, therapistProfile)
+      ) {
+        // create a new match in the DB
+        const newMatch = await Match.create({
+          client: clientId,
+          therapist: therapistProfile.user._id,
+          matchedSetup: checkSetup(clientProfile, therapistProfile),
+          matchedApproach: checkApproach(clientProfile, therapistProfile),
+          matchedPrice: checkPrice(clientProfile, therapistProfile),
+          matchedTraits: null,
+        });
+
+        // update the client with the match
+        await User.findByIdAndUpdate(clientId, {
+          $push: { matches: newMatch._id },
+        });
+
+        console.log('New Match:', newMatch);
+        res.status(201).json(newMatch); */
   } catch (error) {
     console.log('An error occurred creating the match', error);
     next(error);
   }
 });
-// Postman - test passed
+// Postman - test passed before matchmaking
 
 // GET - Get all matches
 // Filter per user?
