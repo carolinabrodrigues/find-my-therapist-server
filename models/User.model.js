@@ -23,7 +23,7 @@ const userSchema = new Schema(
     },
     isTherapist: Boolean,
     matches: [{ type: Schema.Types.ObjectId, ref: 'Match' }],
-    profile: [{ type: Schema.Types.ObjectId, ref: 'Profile' }],
+    profile: { type: Schema.Types.ObjectId, ref: 'Profile' },
   },
   {
     // this second object adds extra properties: `createdAt` and `updatedAt`

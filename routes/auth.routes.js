@@ -59,7 +59,7 @@ router.post('/signup', async (req, res, next) => {
       password: hashedPassword,
       isTherapist,
       matches: [],
-      profile: null,
+      profile,
     });
 
     // returning the created user without the hashed Password

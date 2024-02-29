@@ -6,6 +6,7 @@ const Profile = require('../models/Profile.model');
 
 // POST - Create a new match
 // only gets info from client
+// Postman - test passed
 router.post('/matches', async (req, res, next) => {
   try {
     // the only thing I can get from the FE is the clientId
@@ -13,8 +14,6 @@ router.post('/matches', async (req, res, next) => {
 
     // GET Profiles
     const profiles = await Profile.find({}).populate('user');
-
-    console.log('profiles:', profiles);
 
     const clientProfile = profiles.find(
       profile => profile.user._id.toString() === clientId
@@ -27,27 +26,27 @@ router.post('/matches', async (req, res, next) => {
     console.log('therapists profiles:', therapistsProfiles); // gets the array of therapists
 
     // Match check functions
-    // FUNCTIONS ARE NOT WORKING
     const checkSetup = (client, therapist) => {
       const findCommonSetup = (client, therapist) => {
         for (let i = 0; i < client.therapySetup.length; i++) {
           for (let j = 0; j < therapist.therapySetup.length; j++) {
             if (client.therapySetup[i] === therapist.therapySetup[j]) {
-              return true;
+              return true; // Return true if a common setup is found
             }
           }
-          return false;
         }
+        return false; // Return false if no common setup is found after checking all elements
       };
 
       if (findCommonSetup(client, therapist)) {
-        if (
-          client.therapySetup.includes('In-person') &&
-          therapist.location !== client.location
-        ) {
-          return false;
+        if (client.therapySetup.includes('Remote')) {
+          return true;
+        } else if (client.therapySetup.includes('In-person')) {
+          if (therapist.location !== client.location) {
+            return false;
+          }
         }
-        return true;
+        return true; // Moved from outside the location check
       } else {
         return false;
       }
@@ -61,39 +60,28 @@ router.post('/matches', async (req, res, next) => {
               return true;
             }
           }
-          return false;
         }
+        return false;
       };
 
       return findCommonApproach(client, therapist);
     };
 
     const checkPrice = (client, therapist) => {
-      /* if (therapist.price <= client.price || client.price === 0) {
-        return true;
-      } else {
-        return false;
-      } */
-
       return therapist.price <= client.price || client.price === 0;
     };
 
     // Store matches before loop
     const setupMatches = therapistsProfiles.map(therapist => {
-      console.log('checkSetup function:', checkSetup(clientProfile, therapist)); // -> true
       return checkSetup(clientProfile, therapist);
     });
+
     const approachMatches = therapistsProfiles.map(therapist => {
       return checkApproach(clientProfile, therapist);
-      /* console.log(
-        'checkApproach function:',
-        checkApproach(clientProfile, therapist)
-      ); // -> true */
     });
 
     const priceMatches = therapistsProfiles.map(therapist => {
       return checkPrice(clientProfile, therapist);
-      // console.log('checkPrice function:', checkPrice(clientProfile, therapist)); // -> true
     });
 
     console.log('setupMatches:', setupMatches);
@@ -131,47 +119,18 @@ router.post('/matches', async (req, res, next) => {
 
       console.log('New Matches in DB:', newMatches);
       res.status(201).json(newMatches);
+    } else {
+      res.status(501).json({ message: 'No matches to create' });
     }
-
-    /* else {
-      res.status(500).json({ message: 'No matches to create' });
-    } */
-
-    /* WITH MATCHMAKING & DATABASE CREATION INSIDE LOOP
-    Not best practice
-
-    for (const therapistProfile of therapistsProfiles) {
-      if (
-        checkSetup(clientProfile, therapistProfile) &&
-        checkApproach(clientProfile, therapistProfile) &&
-        checkPrice(clientProfile, therapistProfile)
-      ) {
-        // create a new match in the DB
-        const newMatch = await Match.create({
-          client: clientId,
-          therapist: therapistProfile.user._id,
-          matchedSetup: checkSetup(clientProfile, therapistProfile),
-          matchedApproach: checkApproach(clientProfile, therapistProfile),
-          matchedPrice: checkPrice(clientProfile, therapistProfile),
-          matchedTraits: null,
-        });
-
-        // update the client with the match
-        await User.findByIdAndUpdate(clientId, {
-          $push: { matches: newMatch._id },
-        });
-
-        console.log('New Match:', newMatch);
-        res.status(201).json(newMatch); */
   } catch (error) {
     console.log('An error occurred creating the match', error);
     next(error);
   }
 });
-// Postman - test passed before matchmaking
 
 // GET - Get all matches
 // Filter per user?
+// Postman - test passed
 router.get('/matches', async (req, res, next) => {
   try {
     const matches = await Match.find({});
@@ -183,9 +142,9 @@ router.get('/matches', async (req, res, next) => {
     next(error);
   }
 });
-// Postman - test passed
 
 // GET - Get a specific match
+// Postman - test passed
 router.get('/matches/:id', async (req, res, next) => {
   const { id } = req.params;
 
@@ -208,7 +167,6 @@ router.get('/matches/:id', async (req, res, next) => {
     next(error);
   }
 });
-// Postman - test passed
 
 // PUT - Edit a specific match
 // to add info from therapist
@@ -222,8 +180,7 @@ router.put('/matches/:id', async (req, res, next) => {
     matchedApproach,
     matchedPrice,
     matchedTraits,
-    didClientConfirm,
-    didTherapistConfirm,
+    matchStatus,
   } = req.body;
 
   try {
@@ -240,8 +197,7 @@ router.put('/matches/:id', async (req, res, next) => {
         matchedApproach,
         matchedPrice,
         matchedTraits,
-        didClientConfirm,
-        didTherapistConfirm,
+        matchStatus,
       },
       { new: true }
     );

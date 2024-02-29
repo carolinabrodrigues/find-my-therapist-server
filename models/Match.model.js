@@ -7,8 +7,16 @@ const matchSchema = new Schema({
   matchedApproach: Boolean,
   matchedPrice: Boolean,
   matchedTraits: Boolean,
-  didClientConfirm: { type: Boolean, default: false },
-  didTherapistConfirm: { type: Boolean, default: false },
+  matchStatus: {
+    type: String,
+    enum: [
+      'Pending',
+      'Accepted by Client',
+      'Rejected by Client',
+      'Accepted by Therapist',
+      'Rejected by Therapist',
+    ],
+  },
 });
 
 const Match = model('Match', matchSchema);

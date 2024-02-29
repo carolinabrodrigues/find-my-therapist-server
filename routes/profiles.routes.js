@@ -4,6 +4,7 @@ const Profile = require('../models/Profile.model');
 const User = require('../models/User.model');
 
 // POST - Create a new profile
+// Postman - test passed
 router.post('/profiles', async (req, res, next) => {
   const {
     age,
@@ -18,37 +19,45 @@ router.post('/profiles', async (req, res, next) => {
   } = req.body;
 
   try {
-    // create a new profile in the DB
-    const newProfile = await Profile.create({
-      age,
-      gender,
-      location,
-      therapySetup,
-      psyApproach,
-      importantTraits,
-      price,
-      calendarLink,
-      user,
-    });
+    // first check if there's a profile for the user in the DB
+    const doesProfileExist = await Profile.find({ user });
+    console.log('does Profile exist already?', doesProfileExist);
 
-    // update the user with the profile
-    await User.findByIdAndUpdate(
-      user,
-      {
-        $push: { profile: newProfile._id },
-      },
-      { new: true }
-    );
+    if (!doesProfileExist) {
+      // create a new profile in the DB
+      const newProfile = await Profile.create({
+        age,
+        gender,
+        location,
+        therapySetup,
+        psyApproach,
+        importantTraits,
+        price,
+        calendarLink,
+        user,
+      });
 
-    console.log('New Profile:', newProfile);
-    res.status(201).json(newProfile);
+      // update the user with the profile
+      await User.findByIdAndUpdate(
+        user,
+        {
+          $push: { profile: newProfile._id },
+        },
+        { new: true }
+      );
+
+      console.log('New Profile:', newProfile);
+      res.status(201).json(newProfile);
+    } else {
+      res
+        .status(501)
+        .json({ message: 'Already exists a profile for this user' });
+    }
   } catch (error) {
     console.log('An error occurred creating the profile', error);
     next(error);
   }
 });
-
-// Postman - test passed
 
 // GET - Get all profiles
 // QUESTION - Will I use it?
@@ -65,6 +74,7 @@ router.get('/profiles', async (req, res, next) => {
 });
 
 // GET - Get a single profile
+// Postman - test passed
 router.get('/profiles/:id', async (req, res, next) => {
   const { id } = req.params;
 
@@ -87,13 +97,12 @@ router.get('/profiles/:id', async (req, res, next) => {
     next(error);
   }
 });
-// Postman - test passed
 
 // PUT - Edit a single profile
+// Postman - test passed
 router.put('/profiles/:id', async (req, res, next) => {
   const { id } = req.params;
 
-  // QUESTION: the userId is not supposed to be updated - should it be retrieved from the req.body anyways?
   const {
     age,
     gender,
@@ -135,6 +144,5 @@ router.put('/profiles/:id', async (req, res, next) => {
     next(error);
   }
 });
-// Postman - test passed
 
 module.exports = router;
