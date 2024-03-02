@@ -22,8 +22,9 @@ router.post('/profiles', async (req, res, next) => {
     // first check if there's a profile for the user in the DB
     const doesProfileExist = await Profile.find({ user });
     console.log('does Profile exist already?', doesProfileExist);
+    console.log('doesProfileExist length:', doesProfileExist.length);
 
-    if (!doesProfileExist) {
+    if (doesProfileExist.length === 0) {
       // create a new profile in the DB
       const newProfile = await Profile.create({
         age,
@@ -40,9 +41,7 @@ router.post('/profiles', async (req, res, next) => {
       // update the user with the profile
       await User.findByIdAndUpdate(
         user,
-        {
-          $push: { profile: newProfile._id },
-        },
+        { profile: newProfile._id },
         { new: true }
       );
 

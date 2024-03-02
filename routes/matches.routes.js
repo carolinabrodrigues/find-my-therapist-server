@@ -5,7 +5,6 @@ const User = require('../models/User.model');
 const Profile = require('../models/Profile.model');
 
 // POST - Create a new match
-// only gets info from client
 // Postman - test passed
 router.post('/matches', async (req, res, next) => {
   try {
@@ -18,7 +17,7 @@ router.post('/matches', async (req, res, next) => {
     const clientProfile = profiles.find(
       profile => profile.user._id.toString() === clientId
     );
-    console.log('client profile:', clientProfile); // gets the client
+    // console.log('client profile:', clientProfile); // gets the client
 
     const therapistsProfiles = profiles.filter(
       profile => profile.user.isTherapist === true
@@ -88,7 +87,8 @@ router.post('/matches', async (req, res, next) => {
     console.log('approachMatches:', approachMatches);
     console.log('priceMatches:', priceMatches);
 
-    const matchesToCreate = [];
+    // Add matches to create to an array
+    let matchesToCreate = [];
     for (let i = 0; i < therapistsProfiles.length; i++) {
       if (setupMatches[i] && approachMatches[i] && priceMatches[i]) {
         matchesToCreate.push({
@@ -97,12 +97,38 @@ router.post('/matches', async (req, res, next) => {
           matchedSetup: setupMatches[i],
           matchedApproach: approachMatches[i],
           matchedPrice: priceMatches[i],
-          matchedTraits: null,
+          matchStatus: 'Pending',
         });
       }
     }
 
-    console.log('Matches to create in the DB', matchesToCreate);
+    console.log('Matches to be created:', matchesToCreate);
+
+    // check if matches already exist in the DB
+    let existingMatches = [];
+    for (let i = 0; i < matchesToCreate.length; i++) {
+      const match = matchesToCreate[i];
+      const existingMatch = await Match.findOne({
+        $and: [{ therapist: match.therapist }, { client: match.client }],
+      });
+
+      if (existingMatch) {
+        existingMatches.push(existingMatch);
+      }
+    }
+    console.log('Existing matches from DB:', existingMatches);
+
+    // if there is a match in the DB, we should not create it again
+    if (existingMatches.length > 0) {
+      const filteredMatchesToCreate = matchesToCreate.filter(
+        match =>
+          match.therapist.toString() !== existingMatches[0].therapist.toString()
+      );
+
+      matchesToCreate = filteredMatchesToCreate;
+    }
+
+    console.log('Filtered matches to be created', matchesToCreate);
 
     // Create matches in DB in bulk if there are any to create
     if (matchesToCreate.length > 0) {
@@ -112,7 +138,7 @@ router.post('/matches', async (req, res, next) => {
       await User.findByIdAndUpdate(
         clientId,
         {
-          $push: { matches: { $each: newMatches.map(match => match._id) } },
+          $push: { matches: newMatches.map(match => match._id) },
         },
         { new: true }
       );
@@ -169,19 +195,12 @@ router.get('/matches/:id', async (req, res, next) => {
 });
 
 // PUT - Edit a specific match
-// to add info from therapist
+// to update match status & add info from therapist
+// Postman - test passed
 router.put('/matches/:id', async (req, res, next) => {
   const { id } = req.params;
 
-  const {
-    client,
-    therapist,
-    matchedSetup,
-    matchedApproach,
-    matchedPrice,
-    matchedTraits,
-    matchStatus,
-  } = req.body;
+  const { therapist, matchStatus } = req.body;
 
   try {
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -191,12 +210,6 @@ router.put('/matches/:id', async (req, res, next) => {
     const updatedMatch = await Match.findByIdAndUpdate(
       id,
       {
-        client,
-        therapist,
-        matchedSetup,
-        matchedApproach,
-        matchedPrice,
-        matchedTraits,
         matchStatus,
       },
       { new: true }
@@ -204,7 +217,7 @@ router.put('/matches/:id', async (req, res, next) => {
 
     // update the therapist with the match
     // if the match doesn't exist: find user and push new match
-    // if the match exists: nothing happens
+    // if the match exists: nothing happens in the user
     await User.findOneAndUpdate(
       { _id: therapist, matches: { $nin: [updatedMatch._id] } },
       { $push: { matches: updatedMatch._id } }
@@ -220,9 +233,9 @@ router.put('/matches/:id', async (req, res, next) => {
     next(error);
   }
 });
-// Postman - test passed
 
 // DELETE - Delete a specific match
+// Postman - test passed
 router.delete('/matches/:id', async (req, res, next) => {
   const { id } = req.params;
 
@@ -239,6 +252,5 @@ router.delete('/matches/:id', async (req, res, next) => {
     next(error);
   }
 });
-// Postman - test passed
 
 module.exports = router;

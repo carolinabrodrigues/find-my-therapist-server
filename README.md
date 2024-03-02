@@ -71,7 +71,6 @@
 	matchedApproach: Boolean,
 	matchedPrice: Boolean,
 	matchedTraits: Boolean,
-	didClientConfirmed: Boolean,
-	didTherapistConfirmed: Boolean,
+	matchStatus: String,
 }
 ```
