@@ -12,12 +12,12 @@
 
 ### Profiles Routes
 
-| Method | Route            | Description                   |
-| ------ | ---------------- | ----------------------------- |
-| GET    | /api/profile     | Returns all profiles          |
-| GET    | /api/profile/:id | Returns the specified profile |
-| POST   | /api/profile     | Creates a new profile         |
-| PUT    | /api/profile/:id | Edits the specified profile   |
+| Method | Route             | Description                   |
+| ------ | ----------------- | ----------------------------- |
+| GET    | /api/profiles     | Returns all profiles          |
+| GET    | /api/profiles/:id | Returns the specified profile |
+| POST   | /api/profiles     | Creates a new profile         |
+| PUT    | /api/profiles/:id | Edits the specified profile   |
 
 ### Matches Routes
 

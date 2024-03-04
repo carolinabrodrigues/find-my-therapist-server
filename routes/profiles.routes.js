@@ -14,6 +14,9 @@ router.post('/profiles', async (req, res, next) => {
     psyApproach,
     importantTraits,
     price,
+    description,
+    addressStreet,
+    addressCode,
     calendarLink,
     user,
   } = req.body;
@@ -34,6 +37,9 @@ router.post('/profiles', async (req, res, next) => {
         psyApproach,
         importantTraits,
         price,
+        description,
+        addressStreet,
+        addressCode,
         calendarLink,
         user,
       });
@@ -110,6 +116,9 @@ router.put('/profiles/:id', async (req, res, next) => {
     psyApproach,
     importantTraits,
     price,
+    description,
+    addressStreet,
+    addressCode,
     calendarLink,
   } = req.body;
 
@@ -128,6 +137,9 @@ router.put('/profiles/:id', async (req, res, next) => {
         psyApproach,
         importantTraits,
         price,
+        description,
+        addressStreet,
+        addressCode,
         calendarLink,
       },
       { new: true }

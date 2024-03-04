@@ -30,7 +30,7 @@ const profileSchema = new Schema({
       'Viseu',
     ],
   },
-  therapySetup: { type: [String], enum: ['Remote', 'In-person'] },
+  therapySetup: { type: [String], enum: ['Online', 'In-person'] },
   psyApproach: {
     type: [String],
     enum: [
@@ -44,6 +44,9 @@ const profileSchema = new Schema({
   },
   importantTraits: [String],
   price: { type: Number, min: 0, max: 1000 },
+  description: String,
+  addressStreet: String,
+  addressCode: String,
   calendarLink: String,
   user: { type: Schema.Types.ObjectId, ref: 'User' },
 });
