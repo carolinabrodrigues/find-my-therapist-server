@@ -88,7 +88,9 @@ router.get('/profiles/:userId/:matchId', async (req, res, next) => {
 
     // if user is client, I want to get the therapist profile
     if (userId === match.client.toString()) {
-      matchedProfile = await Profile.findOne({ user: match.therapist });
+      matchedProfile = await Profile.findOne({
+        user: match.therapist,
+      }).populate('user');
     } else {
       // if user is therapist, I want to get the client profile
       matchedProfile = await Profile.findOne({ user: match.client }).populate(
