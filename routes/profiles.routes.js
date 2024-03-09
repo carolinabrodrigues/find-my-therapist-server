@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const mongoose = require('mongoose');
 const Profile = require('../models/Profile.model');
+const Match = require('../models/Match.model');
 const User = require('../models/User.model');
 
 // POST - Create a new profile
@@ -65,7 +66,6 @@ router.post('/profiles', async (req, res, next) => {
 });
 
 // GET - Get all profiles
-// QUESTION - Will I use it?
 router.get('/profiles', async (req, res, next) => {
   try {
     const profiles = await Profile.find({}).populate('user');
@@ -74,6 +74,30 @@ router.get('/profiles', async (req, res, next) => {
     res.status(201).json(profiles);
   } catch (error) {
     console.log('An error occurred retrieving the profiles', error);
+    next(error);
+  }
+});
+
+// GET - Get one Profile per Match
+router.get('/profiles/:userId/:matchId', async (req, res, next) => {
+  const { matchId, userId } = req.params;
+
+  try {
+    const match = await Match.findById(matchId);
+    let matchedProfile = {};
+
+    // if user is client, I want to get the therapist profile
+    if (userId === match.client.toString()) {
+      matchedProfile = await Profile.findOne({ user: match.therapist });
+    } else {
+      // if user is therapist, I want to get the client profile
+      matchedProfile = await Profile.findOne({ user: match.client });
+    }
+
+    console.log('Matched profile:', matchedProfile);
+    res.status(201).json(matchedProfile);
+  } catch (error) {
+    console.log('An error occurred retrieving the profile', error);
     next(error);
   }
 });

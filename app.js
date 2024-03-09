@@ -21,10 +21,10 @@ const indexRoutes = require('./routes/index.routes');
 app.use('/api', indexRoutes);
 
 const profilesRoutes = require('./routes/profiles.routes');
-app.use('/api', isAuthenticated, profilesRoutes);
+app.use('/api', profilesRoutes);
 
 const matchesRoutes = require('./routes/matches.routes');
-app.use('/api', isAuthenticated, matchesRoutes);
+app.use('/api', matchesRoutes);
 
 const authRoutes = require('./routes/auth.routes');
 app.use('/auth', authRoutes);
