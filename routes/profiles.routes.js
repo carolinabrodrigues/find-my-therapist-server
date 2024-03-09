@@ -78,7 +78,7 @@ router.get('/profiles', async (req, res, next) => {
   }
 });
 
-// GET - Get one Profile per Match
+// GET - Get one Profile per User & Match
 router.get('/profiles/:userId/:matchId', async (req, res, next) => {
   const { matchId, userId } = req.params;
 
@@ -91,7 +91,9 @@ router.get('/profiles/:userId/:matchId', async (req, res, next) => {
       matchedProfile = await Profile.findOne({ user: match.therapist });
     } else {
       // if user is therapist, I want to get the client profile
-      matchedProfile = await Profile.findOne({ user: match.client });
+      matchedProfile = await Profile.findOne({ user: match.client }).populate(
+        'user'
+      );
     }
 
     console.log('Matched profile:', matchedProfile);

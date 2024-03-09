@@ -21,13 +21,13 @@ const indexRoutes = require('./routes/index.routes');
 app.use('/api', indexRoutes);
 
 const profilesRoutes = require('./routes/profiles.routes');
-app.use('/api', profilesRoutes);
+app.use('/api', isAuthenticated, profilesRoutes);
 
 const matchesRoutes = require('./routes/matches.routes');
-app.use('/api', matchesRoutes);
+app.use('/api', isAuthenticated, matchesRoutes);
 
 const authRoutes = require('./routes/auth.routes');
-app.use('/auth', authRoutes);
+app.use('/auth', isAuthenticated, authRoutes);
 
 // ❗ To handle errors. Routes that don't exist or errors that you handle in specific routes
 require('./error-handling')(app);
