@@ -68,7 +68,7 @@ router.post('/profiles', async (req, res, next) => {
 // QUESTION - Will I use it?
 router.get('/profiles', async (req, res, next) => {
   try {
-    const profiles = await Profile.find({});
+    const profiles = await Profile.find({}).populate('user');
 
     console.log('All profiles:', profiles);
     res.status(201).json(profiles);
@@ -89,7 +89,7 @@ router.get('/profiles/:id', async (req, res, next) => {
       return res.status(400).json({ message: 'Id is not valid' });
     }
 
-    const profile = await Profile.findById(id);
+    const profile = await Profile.findById(id).populate('user');
 
     // to check if the id exists in the DB:
     if (!profile) {
@@ -143,7 +143,7 @@ router.put('/profiles/:id', async (req, res, next) => {
         calendarLink,
       },
       { new: true }
-    );
+    ).populate('user');
 
     if (!updatedProfile) {
       return res.status(404).json({ message: 'No profile found' });

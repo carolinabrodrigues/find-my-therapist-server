@@ -169,6 +169,31 @@ router.get('/matches', async (req, res, next) => {
   }
 });
 
+// GET - Get all matches per user
+router.get('/matches/:userId', async (req, res, next) => {
+  const { userId } = req.params;
+
+  try {
+    // GET User by id
+    const user = await User.findById(userId);
+    let userMatches = [];
+
+    // if therapist - find matches: therapist = user._id
+    if (user.isTherapist) {
+      userMatches = await Match.find({ therapist: user._id });
+    } else {
+      // if client - find matches: client = user._id
+      userMatches = await Match.find({ client: user._id });
+    }
+
+    console.log('All matches for the user', userMatches);
+    res.status(201).json(userMatches);
+  } catch (error) {
+    console.log('An error occurred retrieving the matches for the user', error);
+    next(error);
+  }
+});
+
 // GET - Get a specific match
 // Postman - test passed
 router.get('/matches/:id', async (req, res, next) => {

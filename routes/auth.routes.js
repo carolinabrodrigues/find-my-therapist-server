@@ -67,6 +67,7 @@ router.post('/signup', async (req, res, next) => {
       firstName: newUser.firstName,
       lastName: newUser.lastName,
       _id: newUser._id,
+      isTherapist: newUser.isTherapist,
     });
   } catch (error) {
     console.log('Error creating the user', error);
@@ -105,6 +106,7 @@ router.post('/login', async (req, res, next) => {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+        isTherapist: user.isTherapist,
       };
 
       // encrypting the token by mixing it with the token_secret
