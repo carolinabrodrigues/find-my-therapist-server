@@ -17,12 +17,12 @@ router.post('/matches', async (req, res, next) => {
     const clientProfile = profiles.find(
       profile => profile.user._id.toString() === clientId
     );
-    // console.log('client profile:', clientProfile); // gets the client
+    //console.log('client profile:', clientProfile); // gets the client
 
     const therapistsProfiles = profiles.filter(
       profile => profile.user.isTherapist === true
     );
-    console.log('therapists profiles:', therapistsProfiles); // gets the array of therapists
+    // console.log('therapists profiles:', therapistsProfiles); // gets the array of therapists
 
     // Match check functions
     const checkSetup = (client, therapist) => {
@@ -38,7 +38,7 @@ router.post('/matches', async (req, res, next) => {
       };
 
       if (findCommonSetup(client, therapist)) {
-        if (client.therapySetup.includes('Remote')) {
+        if (client.therapySetup.includes('Online')) {
           return true;
         } else if (client.therapySetup.includes('In-person')) {
           if (therapist.location !== client.location) {
@@ -83,9 +83,9 @@ router.post('/matches', async (req, res, next) => {
       return checkPrice(clientProfile, therapist);
     });
 
-    console.log('setupMatches:', setupMatches);
-    console.log('approachMatches:', approachMatches);
-    console.log('priceMatches:', priceMatches);
+    // console.log('setupMatches:', setupMatches);
+    // console.log('approachMatches:', approachMatches);
+    // console.log('priceMatches:', priceMatches);
 
     // Add matches to create to an array
     let matchesToCreate = [];
@@ -102,7 +102,7 @@ router.post('/matches', async (req, res, next) => {
       }
     }
 
-    console.log('Matches to be created:', matchesToCreate);
+    // console.log('Matches to be created:', matchesToCreate);
 
     // check if matches already exist in the DB
     let existingMatches = [];
@@ -116,7 +116,7 @@ router.post('/matches', async (req, res, next) => {
         existingMatches.push(existingMatch);
       }
     }
-    console.log('Existing matches from DB:', existingMatches);
+    // console.log('Existing matches from DB:', existingMatches);
 
     // if there is a match in the DB, we should not create it again
     if (existingMatches.length > 0) {
@@ -128,7 +128,7 @@ router.post('/matches', async (req, res, next) => {
       matchesToCreate = filteredMatchesToCreate;
     }
 
-    console.log('Filtered matches to be created', matchesToCreate);
+    // console.log('Filtered matches to be created', matchesToCreate);
 
     // Create matches in DB in bulk if there are any to create
     if (matchesToCreate.length > 0) {
@@ -225,7 +225,7 @@ router.get('/matches/:id', async (req, res, next) => {
 router.put('/matches/:id', async (req, res, next) => {
   const { id } = req.params;
 
-  const { therapist, matchStatus } = req.body;
+  const { matchStatus } = req.body;
 
   try {
     if (!mongoose.Types.ObjectId.isValid(id)) {

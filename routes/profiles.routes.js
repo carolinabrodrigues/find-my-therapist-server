@@ -184,4 +184,28 @@ router.put('/profiles/:id', async (req, res, next) => {
   }
 });
 
+// GET User by ID
+router.get('/users/:id', async (req, res, next) => {
+  const { id } = req.params;
+
+  try {
+    // throw an error if the id is not valid
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Id is not valid' });
+    }
+
+    const user = await User.findById(id);
+
+    // to check if the id exists in the DB:
+    if (!user) {
+      return res.status(404).json({ message: 'No user found' });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.log('An error occurred retrieving the user', error);
+    next(error);
+  }
+});
+
 module.exports = router;
