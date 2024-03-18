@@ -12,24 +12,27 @@ router.post('/matches', async (req, res, next) => {
     const { clientId } = req.body;
 
     // GET Profiles
-    const profiles = await Profile.find({}).populate('user');
+    const clientUser = await User.findById(clientId)
+      .populate('matches')
+      .populate('profile');
 
-    const clientProfile = profiles.find(
-      profile => profile.user._id.toString() === clientId
-    );
-    //console.log('client profile:', clientProfile); // gets the client
+    // check if the matches already exist in the DB
+    const alreadyMatched = clientUser.matches.map(match => match.therapist);
 
-    const therapistsProfiles = profiles.filter(
-      profile => profile.user.isTherapist === true
+    const existingProfiles = await Profile.find({
+      $nor: [{ user: alreadyMatched }],
+    }).populate('user');
+
+    const therapistsProfiles = existingProfiles.filter(
+      profile => profile.user.isTherapist
     );
-    // console.log('therapists profiles:', therapistsProfiles); // gets the array of therapists
 
     // Match check functions
     const checkSetup = (client, therapist) => {
       const findCommonSetup = (client, therapist) => {
-        for (let i = 0; i < client.therapySetup.length; i++) {
+        for (let i = 0; i < client.profile.therapySetup.length; i++) {
           for (let j = 0; j < therapist.therapySetup.length; j++) {
-            if (client.therapySetup[i] === therapist.therapySetup[j]) {
+            if (client.profile.therapySetup[i] === therapist.therapySetup[j]) {
               return true; // Return true if a common setup is found
             }
           }
@@ -38,10 +41,10 @@ router.post('/matches', async (req, res, next) => {
       };
 
       if (findCommonSetup(client, therapist)) {
-        if (client.therapySetup.includes('Online')) {
+        if (client.profile.therapySetup.includes('Online')) {
           return true;
-        } else if (client.therapySetup.includes('In-person')) {
-          if (therapist.location !== client.location) {
+        } else if (client.profile.therapySetup.includes('In-person')) {
+          if (therapist.location !== client.profile.location) {
             return false;
           }
         }
@@ -53,9 +56,9 @@ router.post('/matches', async (req, res, next) => {
 
     const checkApproach = (client, therapist) => {
       const findCommonApproach = (client, therapist) => {
-        for (let i = 0; i < client.psyApproach.length; i++) {
+        for (let i = 0; i < client.profile.psyApproach.length; i++) {
           for (let j = 0; j < therapist.psyApproach.length; j++) {
-            if (client.psyApproach[i] === therapist.psyApproach[j]) {
+            if (client.profile.psyApproach[i] === therapist.psyApproach[j]) {
               return true;
             }
           }
@@ -67,32 +70,34 @@ router.post('/matches', async (req, res, next) => {
     };
 
     const checkPrice = (client, therapist) => {
-      return therapist.price <= client.price || client.price === 0;
+      return (
+        therapist.price <= client.profile.price || client.profile.price === 0
+      );
     };
 
     // Store matches before loop
     const setupMatches = therapistsProfiles.map(therapist => {
-      return checkSetup(clientProfile, therapist);
+      return checkSetup(clientUser, therapist);
     });
 
     const approachMatches = therapistsProfiles.map(therapist => {
-      return checkApproach(clientProfile, therapist);
+      return checkApproach(clientUser, therapist);
     });
 
     const priceMatches = therapistsProfiles.map(therapist => {
-      return checkPrice(clientProfile, therapist);
+      return checkPrice(clientUser, therapist);
     });
 
-    // console.log('setupMatches:', setupMatches);
-    // console.log('approachMatches:', approachMatches);
-    // console.log('priceMatches:', priceMatches);
+    console.log('setupMatches:', setupMatches);
+    console.log('approachMatches:', approachMatches);
+    console.log('priceMatches:', priceMatches);
 
     // Add matches to create to an array
     let matchesToCreate = [];
     for (let i = 0; i < therapistsProfiles.length; i++) {
       if (setupMatches[i] && approachMatches[i] && priceMatches[i]) {
         matchesToCreate.push({
-          client: clientId,
+          client: clientUser._id,
           therapist: therapistsProfiles[i].user._id,
           matchedSetup: setupMatches[i],
           matchedApproach: approachMatches[i],
@@ -102,33 +107,7 @@ router.post('/matches', async (req, res, next) => {
       }
     }
 
-    // console.log('Matches to be created:', matchesToCreate);
-
-    // check if matches already exist in the DB
-    let existingMatches = [];
-    for (let i = 0; i < matchesToCreate.length; i++) {
-      const match = matchesToCreate[i];
-      const existingMatch = await Match.findOne({
-        $and: [{ therapist: match.therapist }, { client: match.client }],
-      });
-
-      if (existingMatch) {
-        existingMatches.push(existingMatch);
-      }
-    }
-    // console.log('Existing matches from DB:', existingMatches);
-
-    // if there is a match in the DB, we should not create it again
-    if (existingMatches.length > 0) {
-      const filteredMatchesToCreate = matchesToCreate.filter(
-        match =>
-          match.therapist.toString() !== existingMatches[0].therapist.toString()
-      );
-
-      matchesToCreate = filteredMatchesToCreate;
-    }
-
-    // console.log('Filtered matches to be created', matchesToCreate);
+    console.log('Matches to be created:', matchesToCreate);
 
     // Create matches in DB in bulk if there are any to create
     if (matchesToCreate.length > 0) {
@@ -146,7 +125,7 @@ router.post('/matches', async (req, res, next) => {
       console.log('New Matches in DB:', newMatches);
       res.status(201).json(newMatches);
     } else {
-      res.status(501).json({ message: 'No matches to create' });
+      res.status(200).json({ message: 'No matches to create' });
     }
   } catch (error) {
     console.log('An error occurred creating the match', error);
@@ -270,6 +249,9 @@ router.delete('/matches/:id', async (req, res, next) => {
     }
 
     await Match.findByIdAndDelete(id);
+
+    // ALSO DELETE MATCHES FROM BOTH USERS
+    await User.updateMany({ $pull: { matches: id } });
 
     res.json({ message: 'Match deleted successfully' });
   } catch (error) {
