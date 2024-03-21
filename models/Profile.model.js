@@ -42,12 +42,12 @@ const profileSchema = new Schema({
       "I don't know",
     ],
   },
-  importantTraits: [String],
   price: { type: Number, min: 0, max: 1000 },
   description: String,
   addressStreet: String,
   addressCode: String,
   calendarLink: String,
+  picture: String,
   user: { type: Schema.Types.ObjectId, ref: 'User' },
 });
 
