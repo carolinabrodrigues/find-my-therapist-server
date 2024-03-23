@@ -31,13 +31,13 @@ router.post('/signup', async (req, res, next) => {
     }
 
     // password validation with regex
-    /* const passwordRegex = /((?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W]).{8,64})/;
+    const passwordRegex = /((?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W]).{8,64})/;
     if (!passwordRegex.test(password)) {
       return res.status(400).json({
         message:
           'Password must have at least 6 characters and contain one number, one lowercase, and one uppercase',
       });
-    } */
+    }
 
     // check if email already exists in the DB
     const userExists = await User.findOne({ email });
