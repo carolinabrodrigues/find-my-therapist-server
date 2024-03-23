@@ -13,12 +13,12 @@ router.post('/profiles', async (req, res, next) => {
     location,
     therapySetup,
     psyApproach,
-    importantTraits,
     price,
     description,
     addressStreet,
     addressCode,
     calendarLink,
+    picture,
     user,
   } = req.body;
 
@@ -36,12 +36,12 @@ router.post('/profiles', async (req, res, next) => {
         location,
         therapySetup,
         psyApproach,
-        importantTraits,
         price,
         description,
         addressStreet,
         addressCode,
         calendarLink,
+        picture,
         user,
       });
 
@@ -142,12 +142,12 @@ router.put('/profiles/:id', async (req, res, next) => {
     location,
     therapySetup,
     psyApproach,
-    importantTraits,
     price,
     description,
     addressStreet,
     addressCode,
     calendarLink,
+    picture,
   } = req.body;
 
   try {
@@ -163,12 +163,12 @@ router.put('/profiles/:id', async (req, res, next) => {
         location,
         therapySetup,
         psyApproach,
-        importantTraits,
         price,
         description,
         addressStreet,
         addressCode,
         calendarLink,
+        picture,
       },
       { new: true }
     ).populate('user');
