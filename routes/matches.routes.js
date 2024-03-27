@@ -223,7 +223,7 @@ router.put('/matches/:id', async (req, res, next) => {
     // if the match doesn't exist: find user and push new match
     // if the match exists: nothing happens in the user
     await User.findOneAndUpdate(
-      { _id: therapist, matches: { $nin: [updatedMatch._id] } },
+      { _id: updatedMatch.therapist, matches: { $nin: [updatedMatch._id] } },
       { $push: { matches: updatedMatch._id } }
     );
 
