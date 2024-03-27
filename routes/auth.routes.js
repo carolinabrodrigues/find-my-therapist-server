@@ -35,7 +35,7 @@ router.post('/signup', async (req, res, next) => {
     if (!passwordRegex.test(password)) {
       return res.status(400).json({
         message:
-          'Password must have at least 6 characters and contain one number, one lowercase, and one uppercase',
+          'Password must have at least 6 characters and contain one number, one lowercase, one uppercase, and one special character',
       });
     }
 
