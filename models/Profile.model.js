@@ -25,6 +25,7 @@ const profileSchema = new Schema({
       'Madeira',
       'Açores',
       'Santarém',
+      'Setúbal',
       'Viana do Castelo',
       'Vila Real',
       'Viseu',
