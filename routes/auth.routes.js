@@ -74,7 +74,6 @@ router.post('/signup', async (req, res, next) => {
     next(error);
   }
 });
-// Postman - test passed
 
 // Login route
 // it doesn't post on the DB
@@ -100,7 +99,6 @@ router.post('/login', async (req, res, next) => {
 
     if (isPasswordCorrect) {
       // create a payload for the JWT with the user info
-      // QUESTION: do we need all the data from the user?
       const payload = {
         _id: user._id,
         email: user.email,
@@ -124,7 +122,6 @@ router.post('/login', async (req, res, next) => {
     next(error);
   }
 });
-// Postman - test passed
 
 // verify route
 router.get('/verify', isAuthenticated, (req, res, next) => {
@@ -135,6 +132,5 @@ router.get('/verify', isAuthenticated, (req, res, next) => {
   // send it back with the user data from the token
   res.json(req.payload);
 });
-// Postman - test passed
 
 module.exports = router;

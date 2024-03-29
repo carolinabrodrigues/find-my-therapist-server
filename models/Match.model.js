@@ -6,7 +6,6 @@ const matchSchema = new Schema({
   matchedSetup: Boolean,
   matchedApproach: Boolean,
   matchedPrice: Boolean,
-  matchedTraits: Boolean,
   matchStatus: {
     type: String,
     enum: [

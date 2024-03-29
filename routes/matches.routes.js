@@ -5,7 +5,6 @@ const User = require('../models/User.model');
 const Profile = require('../models/Profile.model');
 
 // POST - Create a new match
-// Postman - test passed
 router.post('/matches', async (req, res, next) => {
   try {
     // the only thing I can get from the FE is the clientId
@@ -48,7 +47,7 @@ router.post('/matches', async (req, res, next) => {
             return false;
           }
         }
-        return true; // Moved from outside the location check
+        return true;
       } else {
         return false;
       }
@@ -88,10 +87,6 @@ router.post('/matches', async (req, res, next) => {
       return checkPrice(clientUser, therapist);
     });
 
-    console.log('setupMatches:', setupMatches);
-    console.log('approachMatches:', approachMatches);
-    console.log('priceMatches:', priceMatches);
-
     // Add matches to create to an array
     let matchesToCreate = [];
     for (let i = 0; i < therapistsProfiles.length; i++) {
@@ -107,8 +102,6 @@ router.post('/matches', async (req, res, next) => {
       }
     }
 
-    console.log('Matches to be created:', matchesToCreate);
-
     // Create matches in DB in bulk if there are any to create
     if (matchesToCreate.length > 0) {
       const newMatches = await Match.create(matchesToCreate);
@@ -122,28 +115,12 @@ router.post('/matches', async (req, res, next) => {
         { new: true }
       );
 
-      console.log('New Matches in DB:', newMatches);
       res.status(201).json(newMatches);
     } else {
       res.status(200).json({ message: 'No matches to create' });
     }
   } catch (error) {
     console.log('An error occurred creating the match', error);
-    next(error);
-  }
-});
-
-// GET - Get all matches
-// Filter per user?
-// Postman - test passed
-router.get('/matches', async (req, res, next) => {
-  try {
-    const matches = await Match.find({});
-
-    console.log('All matches:', matches);
-    res.status(201).json(matches);
-  } catch (error) {
-    console.log('An error occurred retrieving the matches', error);
     next(error);
   }
 });
@@ -173,34 +150,8 @@ router.get('/matches/:userId', async (req, res, next) => {
   }
 });
 
-// GET - Get a specific match
-// Postman - test passed
-router.get('/matches/:id', async (req, res, next) => {
-  const { id } = req.params;
-
-  try {
-    // throw an error if the id is not valid
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: 'Id is not valid' });
-    }
-
-    const match = await Match.findById(id);
-
-    // to check if the id exists in the DB:
-    if (!match) {
-      return res.status(404).json({ message: 'No match found' });
-    }
-
-    res.json(match);
-  } catch (error) {
-    console.log('An error occurred retrieving the match', error);
-    next(error);
-  }
-});
-
 // PUT - Edit a specific match
 // to update match status & add info from therapist
-// Postman - test passed
 router.put('/matches/:id', async (req, res, next) => {
   const { id } = req.params;
 
@@ -239,7 +190,6 @@ router.put('/matches/:id', async (req, res, next) => {
 });
 
 // DELETE - Delete a specific match
-// Postman - test passed
 router.delete('/matches/:id', async (req, res, next) => {
   const { id } = req.params;
 

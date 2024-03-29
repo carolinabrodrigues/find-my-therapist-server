@@ -5,7 +5,6 @@ const Match = require('../models/Match.model');
 const User = require('../models/User.model');
 
 // POST - Create a new profile
-// Postman - test passed
 router.post('/profiles', async (req, res, next) => {
   const {
     age,
@@ -25,8 +24,6 @@ router.post('/profiles', async (req, res, next) => {
   try {
     // first check if there's a profile for the user in the DB
     const doesProfileExist = await Profile.find({ user });
-    console.log('does Profile exist already?', doesProfileExist);
-    console.log('doesProfileExist length:', doesProfileExist.length);
 
     if (doesProfileExist.length === 0) {
       // create a new profile in the DB
@@ -52,7 +49,6 @@ router.post('/profiles', async (req, res, next) => {
         { new: true }
       );
 
-      console.log('New Profile:', newProfile);
       res.status(201).json(newProfile);
     } else {
       res
@@ -66,7 +62,7 @@ router.post('/profiles', async (req, res, next) => {
 });
 
 // GET - Get all profiles
-router.get('/profiles', async (req, res, next) => {
+/* router.get('/profiles', async (req, res, next) => {
   try {
     const profiles = await Profile.find({}).populate('user');
 
@@ -76,7 +72,7 @@ router.get('/profiles', async (req, res, next) => {
     console.log('An error occurred retrieving the profiles', error);
     next(error);
   }
-});
+}); */
 
 // GET - Get one Profile per User & Match
 router.get('/profiles/:userId/:matchId', async (req, res, next) => {
@@ -98,7 +94,6 @@ router.get('/profiles/:userId/:matchId', async (req, res, next) => {
       );
     }
 
-    console.log('Matched profile:', matchedProfile);
     res.status(201).json(matchedProfile);
   } catch (error) {
     console.log('An error occurred retrieving the profile', error);
@@ -107,7 +102,6 @@ router.get('/profiles/:userId/:matchId', async (req, res, next) => {
 });
 
 // GET - Get a single profile
-// Postman - test passed
 router.get('/profiles/:id', async (req, res, next) => {
   const { id } = req.params;
 
@@ -132,7 +126,6 @@ router.get('/profiles/:id', async (req, res, next) => {
 });
 
 // PUT - Edit a single profile
-// Postman - test passed
 router.put('/profiles/:id', async (req, res, next) => {
   const { id } = req.params;
 
