@@ -105,6 +105,8 @@ router.post('/login', async (req, res, next) => {
         firstName: user.firstName,
         lastName: user.lastName,
         isTherapist: user.isTherapist,
+        profile: user.profile,
+        matches: user.matches,
       };
 
       // encrypting the token by mixing it with the token_secret
