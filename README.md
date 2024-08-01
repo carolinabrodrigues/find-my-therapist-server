@@ -77,3 +77,8 @@
 	matchStatus: String,
 }
 ```
+
+# Links
+[Frontend Repository](https://github.com/carolinabrodrigues/find-my-therapist)
+[Server Deploy Link](https://find-my-therapist-server.onrender.com)
+[Client Deploy Link](https://findmytherapistapp.netlify.app/)
